@@ -1,4 +1,4 @@
-// version 2.0.0
+// version 2.0.1
 
 (function(htmlElementPrototype){
 	htmlElementPrototype.isHidden = function(){
@@ -127,5 +127,12 @@
 
 	arrayPrototype.clear = function() {
 		return this.splice(0, this.length);
+	};
+	
+	arrayPrototype.red = function(funct, ...args) {
+		return this.reduce(function(acc) {
+			funct.apply(this, arguments);
+			return acc;
+		}, ...args);
 	};
 })(Array.prototype);
