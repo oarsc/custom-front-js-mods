@@ -1,4 +1,4 @@
-// version 2.0.1
+// version 2.1.0
 
 (function(htmlElementPrototype){
 	htmlElementPrototype.isHidden = function(){
@@ -8,7 +8,7 @@
 	htmlElementPrototype.isVisible = function(){
 		return !this.isHidden();
 	};
-	
+
 	htmlElementPrototype.show = function(display){
 		if (display == undefined) {
 			display = 'revert';
@@ -52,7 +52,7 @@
 	};
 
 	htmlElementPrototype.clear = function() {
-		while (this.firstChild){ 
+		while (this.firstChild){
 			this.removeChild(this.firstChild);
 		}
 	};
@@ -62,7 +62,7 @@
 
 (function(domTokenListPrototype){
 	const ALL_ELEMENTS_TOKEN = '*';
-	
+
 	const originalAdd = domTokenListPrototype.add;
 	const originalRemove = domTokenListPrototype.remove;
 	const originalToggle = domTokenListPrototype.toggle;
@@ -128,11 +128,37 @@
 	arrayPrototype.clear = function() {
 		return this.splice(0, this.length);
 	};
-	
+
+	arrayPrototype.removeIf = function(callback) {
+		for(let i = 0; i < this.length; i++) {
+			if (callback(this[i], i, this)) {
+				this.splice(i--,1);
+			}
+		}
+		return this;
+	};
+
 	arrayPrototype.red = function(funct, ...args) {
 		return this.reduce(function(acc) {
 			funct.apply(this, arguments);
 			return acc;
 		}, ...args);
 	};
+
+	arrayPrototype.also = function(fun) {
+		fun(this);
+		return this;
+	};
+
+	arrayPrototype.let = function(fun) {
+		return fun(this);
+	};
 })(Array.prototype);
+
+
+(function(css2PropertiesPrototype){
+	css2PropertiesPrototype.also = function(fun) {
+		fun(this);
+		return this;
+	};
+})(CSS2Properties.prototype);

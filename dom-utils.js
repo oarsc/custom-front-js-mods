@@ -55,9 +55,26 @@ export function toggleClass(element, ...classes){
 	}
 }
 
+export function also(object, callbackFn) {
+	callbackFn(object);
+	return object;
+}
+
+export function pipe(object, callbackFn) {
+	return callbackFn(object);
+}
+
 export function generateFromTemplate(id){
 	const temp = getElementById(id);
 	return temp.content.cloneNode(true);
+}
+
+export function isNumeric(value) {
+	if (value) {
+		const float = parseFloat(value);
+		return !isNaN(float) && isFinite(float);
+	}
+	return false;
 }
 
 export function ajax(url, params, options = {}) {
