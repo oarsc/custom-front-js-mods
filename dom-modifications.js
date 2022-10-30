@@ -19,7 +19,7 @@
 	};
 
 	htmlElementPrototype.hide = function(){
-		this.show('none');
+		this.style.display = 'none';
 	};
 
 	htmlElementPrototype.remove = function() {

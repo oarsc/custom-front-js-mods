@@ -66,7 +66,7 @@ export function pipe(object, callbackFn) {
 
 export function generateFromTemplate(id){
 	const temp = getElementById(id);
-	return temp.content.cloneNode(true);
+	return temp?.content.firstElementChild?.cloneNode(true);
 }
 
 export function isNumeric(value) {
