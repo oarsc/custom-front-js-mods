@@ -1,4 +1,4 @@
-// version 2.0.0
+// version 2.2.0
 
 const doc = document;
 
@@ -6,9 +6,9 @@ export function createElement(tag, id, parent){
 	const element = doc.createElement(tag);
 	if (id) {
 		if (id.startsWith('#')) element.id = id.substr(1);
-		else                    element.className = id;
+		else element.className = id;
 	}
-	if (parent) parent.appendChild(element);
+	parent?.appendChild(element);
 	return element;
 }
 
@@ -77,23 +77,26 @@ export function isNumeric(value) {
 	return false;
 }
 
-export function ajax(url, params, options = {}) {
-	if (params) {
-		url = new URL(url, location.origin);
+export function ajax(urlStr, params, options = {}) {
+	if (!params) {
+		return fetch(urlStr, options);
+	}
 
-		const method = options.method || 'GET';
+	const url = new URL(urlStr, location.origin);
+	const method = options.method || 'GET';
 
-		if (method == 'GET') {
-			url.search = new URLSearchParams(params).toString();
+	if (method == 'GET') {
+		url.search = new URLSearchParams(params).toString();
 
-		} else if (method == 'POST' || method == 'DELETE' || method == 'PUT') {
-			options.body = JSON.stringify(params);
+	} else if (method == 'POST' || method == 'DELETE' || method == 'PUT') {
+		options.body = typeof params === 'string' ? params : JSON.stringify(params);
+
+		if (options.json ?? true) {
 			options.headers = {
 				'Content-Type': 'application/json; charset=UTF-8' // 'application/x-www-form-urlencoded; charset=UTF-8'
 			};
 		}
 	}
-
 	return fetch(url, options);
 }
 
@@ -101,14 +104,14 @@ export function redirectPost(url, data) {
 	const form = createElement('form');
 	form.action = url;
 	form.method = 'POST';
-	form.hide();
+	form.style.display = 'none';
 
-	for (const [key, value] of Object.entries(data)) {
-		const input = createElement('input', false, form);
+	Object.entries(data).forEach(([key, value]) => {
+		const input = createElement('input', undefined, form);
 		input.name = key;
 		input.value = value;
 		input.type = 'hidden';
-	}
+	});
 
 	doc.body.appendChild(form);
 
@@ -160,7 +163,9 @@ export function localStorageSet(name, value, json = false){
 
 export function localStorageGet(name, json = false){
 	const value = localStorage.getItem(name);
-	return value && json? JSON.parse(value) : value;
+	return value
+		? (json ? JSON.parse(value) : value)
+		: undefined;
 }
 
 export function localStorageDelete(name){
@@ -169,5 +174,5 @@ export function localStorageDelete(name){
 
 // Support functions
 function keepArrayPositiveValues(array) {
-	return array.filter(e=>e);
+	return array.filter(Boolean);
 }

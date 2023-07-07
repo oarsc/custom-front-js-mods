@@ -1,4 +1,4 @@
-// version 2.0.0
+// version 2.2.0
 
 const doc = document;
 
@@ -83,38 +83,45 @@ export function isNumeric(value?: string): boolean {
   return false;
 }
 
-export function ajax(urlStr: string, params?: any, options: any = {}): Promise<Response> {
-  if (params) {
-    const url = new URL(urlStr, location.origin);
+export interface AjaxOptions extends RequestInit {
+  json?: boolean
+}
 
-    const method = options.method || 'GET';
+export function ajax(urlStr: string, params?: any, options: AjaxOptions = {}): Promise<Response> {
+  if (!params) {
+    return fetch(urlStr, options);
+  }
 
-    if (method == 'GET') {
-      url.search = new URLSearchParams(params).toString();
+  const url = new URL(urlStr, location.origin);
+  const method = options.method || 'GET';
 
-    } else if (method == 'POST' || method == 'DELETE' || method == 'PUT') {
-      options.body = JSON.stringify(params);
+  if (method == 'GET') {
+    url.search = new URLSearchParams(params).toString();
+
+  } else if (method == 'POST' || method == 'DELETE' || method == 'PUT') {
+    options.body = typeof params === 'string' ? params : JSON.stringify(params);
+
+    if (options.json ?? true) {
       options.headers = {
         'Content-Type': 'application/json; charset=UTF-8' // 'application/x-www-form-urlencoded; charset=UTF-8'
       };
     }
-    return fetch(url, options);
   }
-  return fetch(urlStr, options);
+  return fetch(url, options);
 }
 
 export function redirectPost(url: string, data: { [key: string]: string }) {
   const form = createElement('form');
   form.action = url;
   form.method = 'POST';
-  form.hide();
+  form.style.display = 'none';
 
-  for (const [key, value] of Object.entries(data)) {
+  Object.entries(data).forEach(([key, value]) => {
     const input = createElement('input', undefined, form);
     input.name = key;
     input.value = value;
     input.type = 'hidden';
-  }
+  });
 
   doc.body.appendChild(form);
 
@@ -167,7 +174,9 @@ export function localStorageSet(key: string, value: any) {
 
 export function localStorageGet(name: string, json = false): any | undefined {
   const value = localStorage.getItem(name);
-  return value ? json ? JSON.parse(value) : value : undefined;
+  return value
+    ? (json ? JSON.parse(value) : value)
+    : undefined;
 }
 
 export function localStorageDelete(name: string) {
@@ -176,5 +185,5 @@ export function localStorageDelete(name: string) {
 
 // Support functions
 function keepArrayPositiveValues<T>(array: T[]): T[] {
-  return array.filter(e => e);
+  return array.filter(Boolean);
 }
