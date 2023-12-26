@@ -1,4 +1,4 @@
-// version 2.2.0
+// version 2.2.1
 
 const doc = document;
 
@@ -77,6 +77,7 @@ export function generateFromTemplate(id: string): HTMLElement | undefined {
 
 export function isNumeric(value?: string): boolean {
   if (value) {
+    if (!value.match(/^[\d\.]+$/)) return false;
     const float = parseFloat(value);
     return !isNaN(float) && isFinite(float);
   }

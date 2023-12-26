@@ -1,4 +1,4 @@
-// version 2.2.0
+// version 2.2.1
 
 const doc = document;
 
@@ -71,6 +71,7 @@ export function generateFromTemplate(id){
 
 export function isNumeric(value) {
 	if (value) {
+		if (!value.match(/^[\d\.]+$/)) return false;
 		const float = parseFloat(value);
 		return !isNaN(float) && isFinite(float);
 	}
