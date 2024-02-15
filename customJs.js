@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.2.1 ###
-// @version     0.2.2
+// @name        ### CUSTOM JS v0.2.3 ###
+// @version     0.2.3
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -29,6 +29,17 @@ const oar = window.oar = unsafeWindow.oar = {};
       ) callback(ev);
     }, true);
   }
+
+  oar.onkeydebug = () => window.addEventListener('keydown', console.log, true);
+
+  const currentCursorPosition = [0, 0];
+  oar.getCursorPosition = () => [...currentCursorPosition];
+
+  window.addEventListener('mousemove', ev => {
+    currentCursorPosition[0] = ev.clientX;
+    currentCursorPosition[1] = ev.clientY;
+  }, true);
+
 })();
 
 // ########################
@@ -285,12 +296,12 @@ const oar = window.oar = unsafeWindow.oar = {};
 
   oar.onload(ev => contextMenuInit());
   oar.contextMenu = function(position, dataArray, toggleArray) {
-    const [x, y, noScroll] = position;
+    if (!dataArray.length) return;
+    const [x, y, noScroll] = position?.length ? position : oar.getCursorPosition();
 
     setCMContent(dataArray, toggleArray);
     showCM(x, y - (noScroll? 0 : window.scrollY));
   }
-
   /* EXAMPLE:
   let testChecked = true;
   oar.onkey('', 'a', () => {
@@ -320,5 +331,9 @@ const oar = window.oar = unsafeWindow.oar = {};
 
   });
   */
+  oar.menus = { shared1: [], shared2: [], shared3: [] };
+  oar.onkey('shift+ctrl', 49, () => oar.contextMenu(undefined, oar.menus.shared1)); // 1
+  oar.onkey('shift+ctrl', 50, () => oar.contextMenu(undefined, oar.menus.shared2)); // 2
+  oar.onkey('shift+ctrl', 51, () => oar.contextMenu(undefined, oar.menus.shared3)); // 3
 })(window, document);
 
