@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.3.0 ###
-// @version     0.3.0
+// @name        ### CUSTOM JS v0.3.1 ###
+// @version     0.3.1
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -372,16 +372,17 @@ const oar = window.oar = unsafeWindow.oar = {};
         msg.style.borderColor = '#000';
       }
     }
-    if (options?.textBlack) {
+    if (options?.blackText) {
       span.style.color = 'black';
     }
     if (options?.fontSize) {
       span.style.fontSize = options.fontSize;
     }
+    const messageWidth = options?.width ?? WIDTH;
 
     msg.style.bottom = calcBottom();
-    msg.style.right = `-${WIDTH}px`;
-    msg.style.minWidth = `${WIDTH}px`;
+    msg.style.right = `-${messageWidth}px`;
+    msg.style.minWidth = `${messageWidth}px`;
     messages.push(msg);
 
     msg.delete = () => {
