@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.3.2 ###
-// @version     0.3.2
+// @name        ### CUSTOM JS v0.3.3 ###
+// @version     0.3.3
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -9,6 +9,62 @@
 // @downloadURL http://scopz.github.io/custom-front-js-mods/customJs.js
 // @updateURL   http://scopz.github.io/custom-front-js-mods/customJs.js
 // ==/UserScript==
+
+/*
+ * oar.onload(callback)
+ *   send callback to be executed DOMContentLoaded
+ *
+ * oar.onkeydebug()
+ *   show keyboard events to console
+ *
+ * oar.onkey('shift+ctrl+alt', keyCode, callback)
+ *   sets a hotkey action. keyCode can be key (string) or keyCode (numeric)
+ *
+ * oar.getCursorPosition()
+ *   returns current cursor position
+ *
+ * oar.lastContextMenuPosition -> [number, number]
+ *   is the position of the last (or current) opened contextMenu
+ *
+ * oar.contextMenu(position, dataArray, toggleArray)
+ *   position can be undefined or [x, y, noScroll?]
+ *
+ *   USAGE EXAMPLE:
+ *     oar.contextMenu([50, 50], [
+ *          {
+ *            name: 'FOLDER',
+ *            type: 'folder',
+ *            options: [
+ *              {
+ *                name: "LINK",
+ *                type: 'link',
+ *                link: 'https://www.google.com'
+ *              },
+ *              {
+ *                name: "FUNCTION",
+ *                function: () => alert('function call')
+ *              }
+ *            ]
+ *          },
+ *          {
+ *            name: "CHECKED",
+ *            toggled: true,
+ *            function: newValue => testChecked = newValue
+ *          }
+ *        ], [testChecked])
+ *
+ * oar.menus.sharedX
+ *   there are 3 shared contextual menus (X can be 1, 2 or 3)
+ *   these menus can be opened with F1,F2,F3 or shift+ctrl+1,2,3
+ *
+ * oar.showMessage(text, color, options = {})
+ *   good can be true (for success), false (for errors), or any css color
+ *   options can be:
+ *     blackText -> true to make the text black (white by default)
+ *     fontSize -> string with css fontSize (13px by default)
+ *     width -> number in pixels (300 by default)
+ *     time -> timeout time in milliseconds (3500 by default)
+ */
 
 const oar = window.oar = unsafeWindow.oar = {};
 
@@ -81,7 +137,9 @@ const oar = window.oar = unsafeWindow.oar = {};
     addCMContent(contMenuContainer, array, toggleArray);
   }
 
-  function showCM(x,y){
+  function showCM(x, y){
+    oar.lastContextMenuPosition = [x, y];
+
     // Adjust coords
     const cmw = contMenuContainer.offsetWidth;
     const cmh = contMenuContainer.offsetHeight;
@@ -116,7 +174,7 @@ const oar = window.oar = unsafeWindow.oar = {};
 
     array
       .filter(entry => !entry.condition || entry.condition())
-      .forEach((entry, idx, arr) => {
+      .forEach(entry => {
         if (entry.type == 'separator'){
           if (!lastIsSeparator) {
             lastIsSeparator = true;
@@ -307,39 +365,16 @@ const oar = window.oar = unsafeWindow.oar = {};
     setCMContent(dataArray, toggleArray);
     showCM(x, y - (noScroll? 0 : window.scrollY));
   }
-  /* EXAMPLE:
-  let testChecked = true;
-  oar.onkey('', 'a', () => {
 
-    oar.contextMenu([50, 50], [
-      {
-        name: 'FOLDER',
-        type: 'folder',
-        options: [
-          {
-            name: "LINK",
-            type: 'link',
-            link: 'https://www.google.com'
-          },
-          {
-            name: "FUNCTION",
-            function: () => alert('function call')
-          }
-        ]
-      },
-      {
-        name: "CHECKED",
-        toggled: true,
-        function: newValue => testChecked = newValue
-      }
-    ], [testChecked])
-
-  });
-  */
   oar.menus = { shared1: [], shared2: [], shared3: [] };
   oar.onkey('shift+ctrl', 49, () => oar.contextMenu(undefined, oar.menus.shared1)); // 1
   oar.onkey('shift+ctrl', 50, () => oar.contextMenu(undefined, oar.menus.shared2)); // 2
   oar.onkey('shift+ctrl', 51, () => oar.contextMenu(undefined, oar.menus.shared3)); // 3
+
+  oar.onkey('', 112, () => oar.contextMenu(undefined, oar.menus.shared1)); // F1
+  oar.onkey('', 113, () => oar.contextMenu(undefined, oar.menus.shared2)); // F2
+  oar.onkey('', 114, () => oar.contextMenu(undefined, oar.menus.shared3)); // F3
+
 })(window, document);
 
 
