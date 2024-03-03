@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.3.5 ###
-// @version     0.3.5
+// @name        ### CUSTOM JS v0.3.6 ###
+// @version     0.3.6
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -50,6 +50,7 @@
  *            name: "CHECKED",
  *            toggled: true,
  *            toggleFunction: () => true,
+ *            disableFastToggle: true,
  *            function: newValue => testChecked = newValue
  *          }
  *        ], [testChecked])
@@ -296,7 +297,7 @@ const oar = window.oar = unsafeWindow.oar = {};
               };
             };
 
-            fun2 = (button) => {
+            fun2 = entry.disableFastToggle ? fun : (button) => {
               return function() {
                 checkbox.checked = !checkbox.checked;
                 if('context' in entry)
