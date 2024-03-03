@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.3.6 ###
-// @version     0.3.6
+// @name        ### CUSTOM JS v0.4.0 ###
+// @version     0.4.0
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -168,11 +168,23 @@ const oar = window.oar = unsafeWindow.oar = {};
 
   let closeFolderTimer;
   function addCMContent(root, array){
-    let toggleCount = 0;
-    let tout = undefined;
+    let showTimeout = undefined;
 
     let lastIsSeparator = true;
     let pendingSeparator = false;
+
+
+    function closeSubFolders() {
+      const folders = [...root.getElementsByClassName('contextual-folder')];
+      const anyFolderIsVisible = folders.some(folder => folder.style.visibility != 'hidden')
+
+      if (anyFolderIsVisible) {
+        clearTimeout(showTimeout);
+        closeFolderTimer = setTimeout(() => {
+          folders.forEach(f => f.style.visibility = 'hidden');
+        }, DELAY_TIME);
+      }
+    }
 
     array
       .filter(entry => !entry.condition || entry.condition())
@@ -191,141 +203,117 @@ const oar = window.oar = unsafeWindow.oar = {};
         lastIsSeparator = false;
 
         if (entry.type == 'folder'){
+          const elementRoot = createElement('div', 'cm-item folder', root);
+          const title = createElement('span', 'cm-title', elementRoot);
+          title.textContent = entry.name;
+          title.style.pointerEvents = 'none';
 
-          const di = createElement('div', 'cm-item folder', root);
-          const contextFolder = createElement('div', 'contextual-folder', root);
+          const subFolderElement = createElement('div', 'contextual-folder', root);
 
-          const showContext = function(){
+          const showSubFolder = () => {
             clearTimeout(closeFolderTimer);
-            clearTimeout(tout);
+            clearTimeout(showTimeout);
 
             [...root.getElementsByClassName('contextual-folder')]
-              .filter(folder => folder != contextFolder)
+              .filter(folder => folder != subFolderElement)
               .forEach(folder => folder.style.visibility = 'hidden');
 
-            showCMFolder(di.offsetLeft, di.offsetTop, contextFolder);
+            showCMFolder(elementRoot.offsetLeft, elementRoot.offsetTop, subFolderElement);
             return false;
           };
 
-          contextFolder.style.position='absolute';
-          contextFolder.style.left='209px';
-          contextFolder.style.top=(di.offsetTop-3)+'px';
-          contextFolder.style.visibility='hidden';
+          elementRoot.onclick = elementRoot.oncontextmenu = showSubFolder;
 
-          contextFolder.onmouseenter = ev => di.classList.add('active');
-          contextFolder.onmouseleave = ev => di.classList.remove('active');
-
-          di.onclick = showContext;
-          di.oncontextmenu = showContext;
-
-          di.onmouseenter = ev => {
+          elementRoot.onmouseenter = ev => {
             clearTimeout(closeFolderTimer);
-            tout = setTimeout(showContext,DELAY_TIME);
+            showTimeout = setTimeout(showSubFolder, DELAY_TIME);
           };
-          di.onmouseleave = ev => {
-            clearTimeout(tout);
-            tout = undefined;
+          elementRoot.onmouseleave = ev => {
+            clearTimeout(showTimeout);
+            showTimeout = undefined;
           };
 
-          const spanname = createElement('span', 'cm-title', di);
-          spanname.textContent = entry.name;
-          spanname.style.pointerEvents = 'none';
+          subFolderElement.style.position = 'absolute';
+          subFolderElement.style.left = '209px';
+          subFolderElement.style.top = `${elementRoot.offsetTop - 3}px`;
+          subFolderElement.style.visibility = 'hidden';
 
-          addCMContent(contextFolder, entry.options);
+          subFolderElement.onmouseenter = ev => elementRoot.classList.add('active');
+          subFolderElement.onmouseleave = ev => elementRoot.classList.remove('active');
 
-        } else if (entry.type=='link') {
-          const di = createElement('a', 'cm-item');
-          const spanname = createElement('span', 'cm-title', di);
-          di.href = entry.link;
+          addCMContent(subFolderElement, entry.options);
 
-          spanname.textContent = entry.name;
-          spanname.style.pointerEvents = 'none';
+        } else if (entry.type == 'link') {
+          const elementRoot = createElement('a', 'cm-item', root);
+          const title = createElement('span', 'cm-title', elementRoot);
+          title.textContent = entry.name;
+          title.style.pointerEvents = 'none';
 
-          di.onclick = ev => hideCM();
-          //di.onmousedown = function(e){console.log(e.buttons); if (e.buttons>3) hideCM();};
-          di.onmouseenter = function(){
-            let folders = [...root.getElementsByClassName('contextual-folder')];
-            for (let folder of folders) {
-              if (folder.style.visibility != 'hidden'){
-                clearTimeout(tout);
-                closeFolderTimer = setTimeout(function(){
-                  folders.forEach(f => f.style.visibility = 'hidden');
-                }, DELAY_TIME);
-                break;
-              }
-            }
-          };
-          root.appendChild(di);
+          elementRoot.href = entry.link;
+          elementRoot.onclick = hideCM;
+          elementRoot.onmouseenter = closeSubFolders
 
-        } else {
-          let fun = (button) => {
-            return function(event) {
-              event.preventDefault();
-              hideCM();
-              if('context' in entry)
-                entry.function.call(entry.context, button);
-              else
-                entry.function(button);
-              return false;
-            };
-          };
-          let fun2 = fun;
+        } else if(entry.toggled) {
+          const elementRoot = createElement('div', 'cm-item', root);
+          const title = createElement('span', 'cm-title', elementRoot);
+          title.textContent = entry.name;
+          title.style.pointerEvents = 'none';
 
-          const di = createElement('div', 'cm-item');
-          const spanname = createElement('span', 'cm-title', di);
+          const checkbox = createElement('input', 'cm-toggle-checkbox', elementRoot);
+          checkbox.type = 'checkbox';
+          checkbox.style.pointerEvents = 'none';
+          checkbox.checked = entry.toggleFunction? entry.toggleFunction() : false;
 
-          spanname.textContent = entry.name;
-          spanname.style.pointerEvents = 'none';
-
-          if (entry.toggled){
-            const checkbox = createElement('input', 'cm-toggle-checkbox');
-            checkbox.type = 'checkbox';
-            checkbox.style.pointerEvents = 'none';
-            checkbox.checked = entry.toggleFunction? entry.toggleFunction() : false;
-
-            di.appendChild(checkbox);
-
-            fun = (button) => {
-              return function() {
-                checkbox.checked = !checkbox.checked;
-                hideCM();
-                if('context' in entry)
-                  entry.function.call(entry.context,checkbox.checked, button);
-                else
-                  entry.function(checkbox.checked, button);
-                return false;
-              };
-            };
-
-            fun2 = entry.disableFastToggle ? fun : (button) => {
-              return function() {
-                checkbox.checked = !checkbox.checked;
-                if('context' in entry)
-                  entry.function.call(entry.context,checkbox.checked, button);
-                else
-                  entry.function(checkbox.checked, button);
-                return false;
-              };
-            };
+          function action(button) {
+            checkbox.checked = !checkbox.checked;
+            if('context' in entry)
+              entry.function.call(entry.context, checkbox.checked, button);
+            else
+              entry.function(checkbox.checked, button);
           }
 
-          di.onclick = fun(1);
-          di.oncontextmenu = ev => ev.preventDefault() ? false : false;
-          di.onauxclick = fun2(3);
-          //di.onmousedown = function(e){console.log(e.buttons); if (e.buttons>3) hideCM();};
-          di.onmouseenter = function(){
-            let folders = [...root.getElementsByClassName('contextual-folder')];
-            for (let folder of folders) {
-              if (folder.style.visibility != 'hidden'){
-                clearTimeout(tout);
-                closeFolderTimer = setTimeout(function(){
-                  folders.forEach(f => f.style.visibility = 'hidden');
-                }, DELAY_TIME);
-                break;
-              }
-            }
+          elementRoot.onclick = () => {
+            hideCM();
+            action(1);
+            return false;
           };
-          root.appendChild(di);
+          elementRoot.onauxclick = () => {
+            if (entry.disableFastToggle) {
+              hideCM();
+            }
+            action(3);
+            return false;
+          };
+          elementRoot.oncontextmenu = ev => ev.preventDefault() ? false : false;
+          elementRoot.onmouseenter = closeSubFolders
+
+        } else {
+          const elementRoot = createElement('div', 'cm-item', root);
+          const title = createElement('span', 'cm-title', elementRoot);
+          title.textContent = entry.name;
+          title.style.pointerEvents = 'none';
+
+          function action(button) {
+            hideCM();
+            if('context' in entry)
+              entry.function.call(entry.context, button);
+            else
+              entry.function(button);
+          }
+
+          elementRoot.onclick = ev => {
+            ev.preventDefault();
+            action(1)
+            return false;
+          };
+          elementRoot.onauxclick = ev => {
+            ev.preventDefault();
+            action(3)
+            return false;
+          };
+
+          elementRoot.oncontextmenu = ev => ev.preventDefault() ? false : false;
+          elementRoot.onmouseenter = closeSubFolders
         }
       });
   }
