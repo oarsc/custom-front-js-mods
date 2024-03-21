@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.4.1 ###
-// @version     0.4.1
+// @name        ### CUSTOM JS v0.4.2 ###
+// @version     0.4.2
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -66,6 +66,10 @@
  *     fontSize -> string with css fontSize (13px by default)
  *     width -> number in pixels (300 by default)
  *     time -> timeout time in milliseconds (3500 by default)
+ *
+ * oar.slideAnimation(up = true, color = '#000A', time = 250, fadeTime = 250)
+ *   Starts an animatio that will fill all screen.
+ *   Mostly used to enable or disable a feature.
  */
 
 const oar = window.oar = unsafeWindow.oar = {};
@@ -465,3 +469,57 @@ const oar = window.oar = unsafeWindow.oar = {};
   oar.onload(ev => messageInit());
   oar.showMessage = showMessage;
 })(window, document);
+
+
+// #############################
+// ##### SLIDE UP/DOWN ANIMATION
+// #############################
+(() => {
+  function animateElement(color) {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.left = overlay.style.right = overlay.style.bottom = 0;
+    overlay.style.height = '100%';
+    overlay.style.opacity = 1;
+    overlay.style.backgroundColor = color;
+    overlay.style.zIndex = '999999999999999';
+
+    document.body.appendChild(overlay);
+    overlay.ontransitionend = e => {
+      const propertyValue = overlay.style[e.propertyName];
+      if (propertyValue == 0 || propertyValue == '0px') {
+        document.body.removeChild(overlay);
+      }
+    }
+
+    return overlay;
+  }
+
+  function animateUp(color = '#000A', time = 250, fadeTime = 250) {
+    const overlay = animateElement(color);
+    overlay.style.height = 0;
+    overlay.style.transition = `height ${time/1000}s, opacity ${fadeTime/1000}s ${time/1000}s`;
+
+    setTimeout(() => {
+      overlay.style.height = '100%';
+      overlay.style.opacity = 0;
+    }, 10);
+  }
+
+
+  function animateDown(color = '#000A', time = 250, fadeTime = 250) {
+    const overlay = animateElement(color);
+    overlay.style.opacity = 0;
+    overlay.style.transition = `height ${time/1000}s ${fadeTime/1000}s, opacity ${fadeTime/1000}s`;
+
+    setTimeout(() => {
+      overlay.style.height = 0;
+      overlay.style.opacity = 1;
+    }, 10);
+  }
+
+  oar.slideAnimation = function(up = true, color = '#000A', time = 250, fadeTime = 250) {
+    up? animateUp(color, time, fadeTime) : animateDown(color, time, fadeTime)
+  }
+
+})();
