@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.4.2 ###
-// @version     0.4.2
+// @name        ### CUSTOM JS v0.4.3 ###
+// @version     0.4.3
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -48,8 +48,7 @@
  *          },
  *          {
  *            name: "CHECKED",
- *            toggled: true,
- *            toggleFunction: () => true,
+ *            toggle: () => true,
  *            disableFastToggle: true,
  *            function: newValue => testChecked = newValue
  *          }
@@ -257,7 +256,7 @@ const oar = window.oar = unsafeWindow.oar = {};
           elementRoot.onclick = hideCM;
           elementRoot.onmouseenter = closeSubFolders
 
-        } else if(entry.toggled) {
+        } else if (entry.toggle) {
           const elementRoot = createElement('div', 'cm-item', root);
           const title = createElement('span', 'cm-title', elementRoot);
           title.textContent = entry.name;
@@ -266,7 +265,7 @@ const oar = window.oar = unsafeWindow.oar = {};
           const checkbox = createElement('input', 'cm-toggle-checkbox', elementRoot);
           checkbox.type = 'checkbox';
           checkbox.style.pointerEvents = 'none';
-          checkbox.checked = entry.toggleFunction? entry.toggleFunction() : false;
+          checkbox.checked = entry.toggle();
 
           function action(button) {
             checkbox.checked = !checkbox.checked;
