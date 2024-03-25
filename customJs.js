@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.4.4 ###
-// @version     0.4.4
+// @name        ### CUSTOM JS v0.4.5 ###
+// @version     0.4.5
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -40,6 +40,7 @@
  *              {
  *                name: "LINK",
  *                type: 'link',
+ *                target: '_blank',
  *                link: 'https://www.google.com'
  *              },
  *              {
@@ -268,6 +269,7 @@ const oar = window.oar = unsafeWindow.oar = {};
           title.style.pointerEvents = 'none';
 
           elementRoot.href = entry.link;
+          elementRoot.target = entry.target;
           elementRoot.onclick = hideCM;
           elementRoot.onmouseenter = closeSubFolders
 
