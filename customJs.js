@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.4.5 ###
-// @version     0.4.5
+// @name        ### CUSTOM JS v0.4.6 ###
+// @version     0.4.6
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -26,8 +26,9 @@
  * oar.lastContextMenuPosition -> [number, number]
  *   is the position of the last (or current) opened contextMenu
  *
- * oar.contextMenu(position, dataArray)
+ * oar.contextMenu(position, dataArray, toggle = false)
  *   position can be undefined or [x, y, scroll?]
+ *   if toggle and the context menu is opened, it'll closed and nothing else will be done
  *
  *   USAGE EXAMPLE:
  *     oar.contextMenu([50, 50], [
@@ -56,6 +57,12 @@
  *            function: newValue => testChecked = newValue
  *          }
  *        ], [testChecked])
+ *
+ * oar.isContextMenuOpened()
+ *   returns true if the context menu is opened
+ *
+ * oar.closeContextMenu()
+ *   closes context menu if opened
  *
  * oar.menus.sharedX
  *   there are 3 shared contextual menus (X can be 1, 2 or 3)
@@ -368,7 +375,13 @@ const oar = window.oar = unsafeWindow.oar = {};
 
 
   oar.onload(ev => contextMenuInit());
-  oar.contextMenu = function(position, dataArray) {
+  oar.contextMenu = function(position, dataArray, toggle = false) {
+    if (toggle) {
+      if (contMenuContainer.style.visibility == 'visible') {
+        hideCM();
+        return;
+      }
+    }
     if (!dataArray.length) return;
     const [x, y, scroll] = position?.length ? position : oar.getCursorPosition();
 
@@ -376,14 +389,17 @@ const oar = window.oar = unsafeWindow.oar = {};
     showCM(x, y + (scroll? window.scrollY : 0));
   }
 
-  oar.menus = { shared1: [], shared2: [], shared3: [] };
-  oar.onkey('shift+ctrl', 49, () => oar.contextMenu(undefined, oar.menus.shared1)); // 1
-  oar.onkey('shift+ctrl', 50, () => oar.contextMenu(undefined, oar.menus.shared2)); // 2
-  oar.onkey('shift+ctrl', 51, () => oar.contextMenu(undefined, oar.menus.shared3)); // 3
+  oar.isContextMenuOpened = () => contMenuContainer.style.visibility == 'visible';
+  oar.closeContextMenu = () => hideCM();
 
-  oar.onkey('', 112, () => oar.contextMenu(undefined, oar.menus.shared1)); // F1
-  oar.onkey('', 113, () => oar.contextMenu(undefined, oar.menus.shared2)); // F2
-  oar.onkey('', 114, () => oar.contextMenu(undefined, oar.menus.shared3)); // F3
+  oar.menus = { shared1: [], shared2: [], shared3: [] };
+  oar.onkey('shift+ctrl', 49, () => oar.contextMenu(undefined, oar.menus.shared1, true)); // 1
+  oar.onkey('shift+ctrl', 50, () => oar.contextMenu(undefined, oar.menus.shared2, true)); // 2
+  oar.onkey('shift+ctrl', 51, () => oar.contextMenu(undefined, oar.menus.shared3, true)); // 3
+
+  oar.onkey('', 112, () => oar.contextMenu(undefined, oar.menus.shared1, true)); // F1
+  oar.onkey('', 113, () => oar.contextMenu(undefined, oar.menus.shared2, true)); // F2
+  oar.onkey('', 114, () => oar.contextMenu(undefined, oar.menus.shared3, true)); // F3
 
 })(window, document);
 
