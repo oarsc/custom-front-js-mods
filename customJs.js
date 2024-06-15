@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.4.6 ###
-// @version     0.4.6
+// @name        ### CUSTOM JS v0.4.7 ###
+// @version     0.4.7
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -19,6 +19,9 @@
  *
  * oar.onkey('shift+ctrl+alt', keyCode, callback)
  *   sets a hotkey action. keyCode can be key (string) or keyCode (numeric)
+ *
+ * oar.checkInsert(callback(element))
+ *   each time a new element is inserted by using appendChild or insertBefore is sent to the callback
  *
  * oar.getCursorPosition()
  *   returns current cursor position
@@ -110,6 +113,37 @@ const oar = window.oar = unsafeWindow.oar = {};
     currentCursorPosition[0] = ev.clientX;
     currentCursorPosition[1] = ev.clientY;
   }, true);
+
+  const appendChildOriginal = HTMLElement.prototype.appendChild;
+  const insertBeforeOriginal = HTMLElement.prototype.insertBefore;
+  const insertChecks = [];
+
+  oar.checkInsert = function(callback) {
+    insertChecks.push(callback);
+    if (insertChecks.length == 1) {
+      HTMLElement.prototype.appendChild = function(element) {
+        insertChecks.forEach(a => a(element));
+        appendChildOriginal.apply(this, arguments);
+      }
+
+      HTMLElement.prototype.insertBefore = function(element) {
+        insertChecks.forEach(a => a(element));
+        insertBeforeOriginal.apply(this, arguments);
+      }
+    }
+  }
+
+  oar.removeCheckInsert = function(callback) {
+    const idx = insertChecks.indexOf(callback);
+    if (idx >= 0) {
+      insertChecks.splice(idx, 1);
+
+      if (insertChecks.length == 0) {
+        HTMLElement.prototype.appendChild = appendChildOriginal;
+        HTMLElement.prototype.insertBefore = insertBeforeOriginal;
+      }
+    }
+  }
 
 })();
 
