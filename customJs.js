@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name        ### CUSTOM JS v0.4.7 ###
-// @version     0.4.7
+// @name        ### CUSTOM JS v0.4.8 ###
+// @version     0.4.8
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @run-at      document-start
@@ -40,6 +40,7 @@
  *          {
  *            name: 'FOLDER',
  *            type: 'folder',
+ *            style: 'font-weight: bold'
  *            options: [
  *              {
  *                name: "LINK",
@@ -261,11 +262,13 @@ const oar = window.oar = unsafeWindow.oar = {};
         if (entry.type == 'title'){
           const elementRoot = createElement('div', 'cm-item-title', root);
           elementRoot.textContent = entry.name;
+          if (entry.style) elementRoot.setAttribute('style', entry.style);
 
         } else if (entry.type == 'folder'){
           const elementRoot = createElement('div', 'cm-item folder', root);
           const title = createElement('span', 'cm-title', elementRoot);
           title.textContent = entry.name;
+          if (entry.style) title.setAttribute('style', entry.style);
           title.style.pointerEvents = 'none';
 
           const subFolderElement = createElement('div', 'contextual-folder', root);
@@ -307,6 +310,7 @@ const oar = window.oar = unsafeWindow.oar = {};
           const elementRoot = createElement('a', 'cm-item', root);
           const title = createElement('span', 'cm-title', elementRoot);
           title.textContent = entry.name;
+          if (entry.style) title.setAttribute('style', entry.style);
           title.style.pointerEvents = 'none';
 
           elementRoot.href = entry.link;
@@ -318,6 +322,7 @@ const oar = window.oar = unsafeWindow.oar = {};
           const elementRoot = createElement('div', 'cm-item', root);
           const title = createElement('span', 'cm-title', elementRoot);
           title.textContent = entry.name;
+          if (entry.style) title.setAttribute('style', entry.style);
           title.style.pointerEvents = 'none';
 
           const checkbox = createElement('input', 'cm-toggle-checkbox', elementRoot);
@@ -352,6 +357,7 @@ const oar = window.oar = unsafeWindow.oar = {};
           const elementRoot = createElement('div', 'cm-item', root);
           const title = createElement('span', 'cm-title', elementRoot);
           title.textContent = entry.name;
+          if (entry.style) title.setAttribute('style', entry.style);
           title.style.pointerEvents = 'none';
 
           function action(button) {
