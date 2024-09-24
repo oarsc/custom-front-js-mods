@@ -6,8 +6,8 @@
 // @run-at      document-start
 // @grant       none
 // @author      oar/scopp
-// @downloadURL http://scopz.github.io/custom-front-js-mods/customJs.js
-// @updateURL   http://scopz.github.io/custom-front-js-mods/customJs.js
+// @downloadURL http://oarsc.github.io/custom-front-js-mods/customJs.js
+// @updateURL   http://oarsc.github.io/custom-front-js-mods/customJs.js
 // ==/UserScript==
 
 /*
